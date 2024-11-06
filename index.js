@@ -1,20 +1,27 @@
-var http = require('http');
-var url = require('url');
+const http = require('http');
+const url = require('url');
+const fs = require('fs');
+const path = require('path');
 
 var server = http.createServer(function(req, res) {
-    var parsedUrl = url.parse(req.url, true);  // Parse the URL of the request
+    var parsedUrl = url.parse(req.url, true);
+    const pathname = parsedUrl.pathname
     
-    // Check if the requested path is '/cool'
-    if (parsedUrl.pathname === '/cool') {
+    if (pathname === '/status') {
         res.writeHead(200, {'Content-Type': 'text/plain'});
-        var message = 'It yay!\n',
-            version = 'NodeJS ' + process.versions.node + '\n',
-            response = [message, version].join('\n');
-        res.end(response);
-    } else {
-        // If the path is not '/cool', respond with a 404 error
-        res.writeHead(404, {'Content-Type': 'text/plain'});
-        res.end('404 Not Found');
+        res.end("all good brotha");
+    } else if (pathname === '/coolazoid.sh') {
+
+        fs.readFile('/home/minehzlk/coolazoid.sh', (err, data) => {
+            if (err) {
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.end('Server Error');
+                return;
+            }
+           
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.end(data);
+        });
     }
 });
 
