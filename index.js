@@ -9,7 +9,7 @@ var server = http.createServer(function(req, res) {
     
     if (pathname === '/status') {
         res.writeHead(200, {'Content-Type': 'text/plain'});
-        res.end("all good brotha");
+        res.end("Everything is good");
     } else if (pathname === '/coolazoid.sh') {
 
         fs.readFile('/home/minehzlk/coolazoid.sh', (err, data) => {
