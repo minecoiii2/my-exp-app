@@ -28,7 +28,6 @@ var server = http.createServer(function(req, res) {
     }
 });
 
-// Listen on port 80 for production
 server.listen(80, function() {
-    console.log('Server is listening on port 80');
+    console.log('Server is on port 80');
 });
