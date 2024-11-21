@@ -7,7 +7,7 @@ var server = http.createServer(function (req, res) {
 
     if (pathname === '/status') {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end("Everything is good");
+        res.end("Everything is good!");
     } else if (pathname === '/6611111010610611111711451515064646464') {
         if (req.method === 'POST') {
             let body = '';
