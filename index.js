@@ -1,13 +1,81 @@
 const http = require('http');
 const url = require('url');
+const fs = require('fs');
+const path = require('path');
+
+const pass = "BONJOUR"
 
 var server = http.createServer(function (req, res) {
     var parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
+    const contentTypeHeader = req.headers["content-type"];
+    const [contentType, contentExt] = contentTypeHeader.split("/")
+
+    function respond(code, content) {
+        res.writeHead(code, {'Content-Type': 'text/plain'})
+        res.end(content || toString(code))
+    }
 
     if (pathname === '/status') {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end("Everything is good!");
+        respond(200, 'All good')
+
+    } else if (pathname === "/wwcopy") {
+        if (req.headers["auth"] !== pass) {respond(400, 'p'); return}
+        if (req.method !== 'POST') {respond(400); return}
+
+        fs.writeFile(
+            path.join(__dirname, "copy.json"),
+            JSON.stringify({
+                ext: contentExt,
+                type: contentType,
+            }),
+            (err) => {
+                if (err) {
+                    respond(500, err)
+                }
+            }
+        );
+
+        const fileStream = fs.createWriteStream(
+            path.join(__dirname, "copy." + contentExt)
+        );
+
+        req.pipe(fileStream)
+
+        fileStream.on("finish", () => {
+            respond(200)
+        })
+
+        fileStream.on("error", () => {
+            respond(500)
+        })
+       
+    } else if (pathname == "wwpaste") {
+        if (req.headers["auth"] !== pass) {respond(400, 'p'); return}
+        const specsFilePath = path.join(__dirname, "copy.json")
+        if (!fs.existsSync(specsFilePath)) {respond(404); return}
+
+        fs.readFile(specsFilePath, 'utf-8', (err, data) => {
+            if (err) {
+                respond(500, err);
+                return;
+            }
+
+            try {
+                const jsonData = JSON.parse(data)
+                const filePath = path.join(__dirname, "copy." + jsonData["ext"])
+
+                if (!fs.existsSync(filePath)) {respond(404, '2'); return}
+
+                res.writeHead(200, {"Content-Type": jsonData["type"] + "/" + jsonData["ext"]})
+                fs.createReadStream(filePath).pipe(res)
+
+            } catch (err) {
+                respond(500, 'json err ' + err)
+                return;
+            }
+        })
+
     } else if (pathname === '/6611111010610611111711451515064646464') {
         if (req.method === 'POST') {
             let body = '';
@@ -25,8 +93,7 @@ var server = http.createServer(function (req, res) {
                     const content = parsedBody.content; // The content to send to the webhook
 
                     if (!webhookUrl || !content) {
-                        res.writeHead(400, { 'Content-Type': 'text/plain' });
-                        res.end('Bad Request: Missing URL or content in the body.');
+                        respond(400, 'b')
                         return;
                     }
 
@@ -54,8 +121,7 @@ var server = http.createServer(function (req, res) {
 
                     webhookReq.on('error', err => {
                         console.error(err);
-                        res.writeHead(500, { 'Content-Type': 'text/plain' });
-                        res.end('Failed to forward the request.');
+                        respond(500, err)
                     });
 
                     // Send the body content
@@ -63,17 +129,14 @@ var server = http.createServer(function (req, res) {
                     webhookReq.end();
                 } catch (err) {
                     console.error(err);
-                    res.writeHead(400, { 'Content-Type': 'text/plain' });
-                    res.end('Bad Request: Invalid JSON body.');
+                    respond(400, err)
                 }
             });
         } else {
-            res.writeHead(405, { 'Content-Type': 'text/plain' });
-            res.end('Method Not Allowed: Only POST is supported.');
+            respond(405, 'leave this url alone')
         }
     } else {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end(pathname);
+        respond(404)
     }
 });
 
