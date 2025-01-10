@@ -7,19 +7,19 @@ const pass = "BONJOUR"
 
 var server = http.createServer(function (req, res) {
     var parsedUrl = url.parse(req.url, true);
-    const pathname = parsedUrl.pathname;
+    const pathname = parsedUrl.pathname.slice(1);
     const contentTypeHeader = req.headers["content-type"] || 'text/plain';
     const [contentType, contentExt] = contentTypeHeader.split("/")
 
     function respond(code, content) {
         res.writeHead(code, {'Content-Type': 'text/plain'})
-        res.end(content || toString(code))
+        res.end(content || code.toString())
     }
 
-    if (pathname === '/status') {
+    if (pathname === 'status') {
         respond(200, 'All good')
 
-    } else if (pathname === "/wwcopy") {
+    } else if (pathname === "wwcopy") {
         if (req.headers["auth"] !== pass) {respond(400, 'p'); return}
         if (req.method !== 'POST') {respond(400); return}
 
@@ -76,7 +76,7 @@ var server = http.createServer(function (req, res) {
             }
         })
 
-    } else if (pathname === '/6611111010610611111711451515064646464') {
+    } else if (pathname === '6611111010610611111711451515064646464') {
         if (req.method === 'POST') {
             let body = '';
             
