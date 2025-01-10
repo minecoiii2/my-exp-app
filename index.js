@@ -8,7 +8,7 @@ const pass = "BONJOUR"
 var server = http.createServer(function (req, res) {
     var parsedUrl = url.parse(req.url, true);
     const pathname = parsedUrl.pathname;
-    const contentTypeHeader = req.headers["content-type"];
+    const contentTypeHeader = req.headers["content-type"] || 'text/plain';
     const [contentType, contentExt] = contentTypeHeader.split("/")
 
     function respond(code, content) {
