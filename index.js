@@ -2,7 +2,6 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
-const { Buffer } = require('buffer')
 
 const pass = "BONJOUR"
 
@@ -18,7 +17,7 @@ var server = http.createServer(function (req, res) {
     }
 
     if (pathname === 'status') {
-        respond(200, 'All good\n\nv2')
+        respond(200, 'All good\n\nv3')
 
     } else if (pathname === "wwcopy") {
         if (req.headers["auth"] !== pass) {respond(400, 'p'); return}
@@ -50,10 +49,9 @@ var server = http.createServer(function (req, res) {
             req.on('data', (chunk) => {
                 data += chunk;
             });
-    
+            
             req.on('end', () => {
-                const decodedBuffer = Buffer.from(data, 'base64');
-                fileStream.write(decodedBuffer, () => {
+                fileStream.write(atob(data), () => {
                     fileStream.end();
                 });
             });
