@@ -2,6 +2,7 @@ const http = require('http');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
+const { Buffer } = require('buffer')
 
 const pass = "BONJOUR"
 
@@ -17,17 +18,20 @@ var server = http.createServer(function (req, res) {
     }
 
     if (pathname === 'status') {
-        respond(200, 'All good')
+        respond(200, 'All good\n\nv2')
 
     } else if (pathname === "wwcopy") {
         if (req.headers["auth"] !== pass) {respond(400, 'p'); return}
         if (req.method !== 'POST') {respond(400); return}
+
+        const base64encoded = req.headers["base64"] === contentType
 
         fs.writeFile(
             path.join(__dirname, "copy.json"),
             JSON.stringify({
                 ext: contentExt,
                 type: contentType,
+                base64: base64encoded,
             }),
             (err) => {
                 if (err) {
@@ -37,10 +41,29 @@ var server = http.createServer(function (req, res) {
         );
 
         const fileStream = fs.createWriteStream(
-            path.join(__dirname, "copy." + contentExt)
+            path.join(__dirname, "copy.any")
         );
 
-        req.pipe(fileStream)
+        if (base64encoded) {
+            let data = '';
+
+            req.on('data', (chunk) => {
+                data += chunk;
+            });
+    
+            req.on('end', () => {
+                const decodedBuffer = Buffer.from(data, 'base64');
+                fileStream.write(decodedBuffer, () => {
+                    fileStream.end();
+                });
+            });
+    
+            req.on('error', (err) => {
+                respond(500, err);
+            });
+        } else {
+            req.pipe(fileStream);
+        }
 
         fileStream.on("finish", () => {
             respond(200)
@@ -63,7 +86,7 @@ var server = http.createServer(function (req, res) {
 
             try {
                 const jsonData = JSON.parse(data)
-                const filePath = path.join(__dirname, "copy." + jsonData["ext"])
+                const filePath = path.join(__dirname, "copy.any")
 
                 if (!fs.existsSync(filePath)) {respond(404, '2'); return}
 
