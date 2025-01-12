@@ -44,21 +44,7 @@ var server = http.createServer(function (req, res) {
         );
 
         if (base64encoded) {
-            let data = '';
-
-            req.on('data', (chunk) => {
-                data += chunk;
-            });
-            
-            req.on('end', () => {
-                fileStream.write(atob(data), () => {
-                    fileStream.end();
-                });
-            });
-    
-            req.on('error', (err) => {
-                respond(500, err);
-            });
+           respond(401, 'base64')
         } else {
             req.pipe(fileStream);
         }
