@@ -3,7 +3,7 @@ const url = require('url');
 const fs = require('fs');
 const path = require('path');
 
-const pass = "BONJOUR"
+const pass = "BONJOUR";
 
 var server = http.createServer(function (req, res) {
     var parsedUrl = url.parse(req.url, true);
@@ -17,9 +17,9 @@ var server = http.createServer(function (req, res) {
     }
 
     if (pathname === 'status') {
-        respond(200, 'All good\n\nv3')
+        respond(200, 'All good\n\nv4.02')
 
-    } else if (pathname === "wwcopy") {
+    }  else if (pathname === "wwcopy") {
         if (req.headers["auth"] !== pass) {respond(400, 'p'); return}
         if (req.method !== 'POST') {respond(400); return}
 
